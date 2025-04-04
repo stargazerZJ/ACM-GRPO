@@ -69,12 +69,29 @@ class PolicyLoss(nn.Module):
         advantages: torch.Tensor,
         action_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
-        loss=None
-        ######################
-        # 根据deepseekmath, deepseek r1中的paper，实现loss函数
-        # 不需要实现klloss
-        ######################
-        return loss
+        # Calculate the probability ratio
+        # π_θ(a|s) / π_θ_old(a|s)
+        ratio = (log_probs - old_log_probs).exp()
+
+        # Clipped surrogate objective
+        # First term: ratio * advantage
+        surr1 = ratio * advantages
+        # Second term: clip(ratio, 1-ε, 1+ε) * advantage
+        surr2 = torch.clamp(ratio, 1.0 - self.clip_eps, 1.0 + self.clip_eps) * advantages
+
+        # Take the minimum of the two terms
+        # This implements: min(ratio * A, clip(ratio, 1-ε, 1+ε) * A)
+        policy_loss = -torch.min(surr1, surr2)
+
+        # Apply mask if provided
+        if action_mask is not None:
+            policy_loss = masked_mean(policy_loss, action_mask, dim=-1)
+        else:
+            policy_loss = policy_loss.mean()
+
+        # kl loss will be calculated separately
+
+        return policy_loss
 
 
 class ValueLoss(nn.Module):
