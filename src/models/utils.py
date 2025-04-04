@@ -42,8 +42,8 @@ def compute_reward(
     num_actions: Optional[Union[int, list[int]]] = None,
     reward_clip_range: Tuple[float, float] = None,
 ) -> Union[torch.Tensor, list[torch.Tensor]]:
-    if kl_coef <= 0.0:
-        kl_coef = 0.0
+
+    kl_coef = 0.0   # remove the kl loss term as suggusted in the DRPO paper
 
     if reward_clip_range:
         r = r.clamp(min=reward_clip_range[0], max=reward_clip_range[1])
