@@ -58,9 +58,10 @@ class PolicyLoss(nn.Module):
     Policy Loss for PPO
     """
 
-    def __init__(self, clip_eps: float = 0.2) -> None:
+    def __init__(self, clip_eps_low: float = 0.2, clip_eps_high: float = 0.28) -> None:
         super().__init__()
-        self.clip_eps = clip_eps
+        self.clip_eps_low = clip_eps_low
+        self.clip_eps_high = clip_eps_high # apply the 'clip higher' technique in DRPO paper
 
     def forward(
         self,
@@ -76,8 +77,8 @@ class PolicyLoss(nn.Module):
         # Clipped surrogate objective
         # First term: ratio * advantage
         surr1 = ratio * advantages
-        # Second term: clip(ratio, 1-ε, 1+ε) * advantage
-        surr2 = torch.clamp(ratio, 1.0 - self.clip_eps, 1.0 + self.clip_eps) * advantages
+        # Second term: clip(ratio, 1-ε_low, 1+ε_high) * advantage
+        surr2 = torch.clamp(ratio, 1.0 - self.clip_eps_low, 1.0 + self.clip_eps_high) * advantages
 
         # Take the minimum of the two terms
         # This implements: min(ratio * A, clip(ratio, 1-ε, 1+ε) * A)
