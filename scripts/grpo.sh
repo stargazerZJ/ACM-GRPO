@@ -71,7 +71,7 @@ RAY_ADDRESS="http://127.0.0.1:$RAY_DASHBOARD_PORT" ray job submit --address="htt
     --samples_save_path $SAMPLES_SAVE_PATH \
     --micro_train_batch_size 8 \
     --train_batch_size $BS \
-    --micro_rollout_batch_size 16 \
+    --micro_rollout_batch_size 64 \
     --rollout_batch_size $ROLLOUT_BS \
     --n_samples_per_prompt $N_SAMPLES_PER_PROMPT \
     --max_epochs $EP \
@@ -84,6 +84,7 @@ RAY_ADDRESS="http://127.0.0.1:$RAY_DASHBOARD_PORT" ray job submit --address="htt
     --actor_learning_rate $LR \
     --lr_warmup_steps 10 \
     --init_kl_coef $KL_COEF \
+	--use_kl_estimator_k3 \
     --prompt_data $DATA_PATH \
     --test_path $PROJECT_DIR/data/eval/RL.jsonl \
     --input_key context_messages \
@@ -91,7 +92,6 @@ RAY_ADDRESS="http://127.0.0.1:$RAY_DASHBOARD_PORT" ray job submit --address="htt
     --max_samples 100000 \
     --packing_samples \
     --normalize_reward \
-    --adam_offload \
     --flash_attn \
     --vllm_sync_backend nccl \
     --gradient_checkpointing \
