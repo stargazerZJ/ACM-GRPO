@@ -147,14 +147,26 @@ class RuleBasedRMProxy:
                     prompt = prompt.replace("Please reason step by step, and put your final answer within \\boxed{}", "").strip()
                     response = query.split("<｜Assistant｜>")[-1].strip()
 
-                score=None
-                ######################
-                # 根据prompt, response, prompt2answer等写reward function
-                # 思路:
-                # 1.从模型生成的response中提取模型的最终答案(hint: 分析sft数据输出最终答案的格式，使用self.boxed_pattern提取答案)
-                # 2.用prompt2answer获取prompt对应的groundtruth
-                # 3.用math_equal函数评估response是否正确，并据此给出reward
-                ######################
+                boxed_matches = self.boxed_pattern.findall(response)
+                if not boxed_matches:
+                    # return -0.5
+                    return -1
+
+                model_answer = boxed_matches[-1]
+                if prompt in self.prompt2answer:
+                    ground_truth = self.prompt2answer[prompt]
+                else:
+                    return -0.2
+
+                if math_equal(ground_truth, model_answer):
+                    score = 1.0
+                else:
+                    # score = -0.8
+                    score = -1
+
+                # if self.repeat_pattern.search(response):
+                #     score = min(score, -0.3)
+
                 return score
 
         except TimeoutException:
