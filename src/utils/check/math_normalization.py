@@ -103,25 +103,25 @@ def check_sympy_equivalence(formatted_target_str, formatted_prediction_str):
     if compare_rounded_numbers(formatted_target_str, formatted_prediction_str): return True
     if compare_rounded_numbers(formatted_prediction_str, formatted_target_str): return True
 
-    if formatted_target_str=="True": 
+    if formatted_target_str=="True":
         if "yes" in formatted_prediction_str.lower(): return True
-    if formatted_target_str=="False" : 
+    if formatted_target_str=="False" :
         if "no" in formatted_prediction_str.lower(): return True
     if len(formatted_prediction_str) >= 40:
         return False
-    flag = False    
+    flag = False
     try:
         target_expr = parse_latex(formatted_target_str)
     except:
         target_expr = formatted_target_str
         flag = True
-    
+
     try:
         prediction_expr = parse_latex(formatted_prediction_str)
     except:
         prediction_expr = formatted_prediction_str
         flag = True
-    
+
     if flag == True:
         return formatted_target_str == formatted_prediction_str
 

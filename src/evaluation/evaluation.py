@@ -25,7 +25,7 @@ def get_prompts(dev_set, apply_chat_template):
             prompt2answer[prompt]=str(line['answer'])
     print(processed_prompts[-1])
     return processed_prompts, prompt2answer
-    
+
 def math_equal(gold, answer):
     try:
         gold=parse(gold)
@@ -46,12 +46,12 @@ def main(args):
     another_args = {'max_num_batched_tokens': 32768}
     apply_chat_template=AutoTokenizer.from_pretrained(args.model_path).apply_chat_template
     print("?????")
-    
+
     llm = LLM(model=args.model_path, tensor_parallel_size=num_gpus, **another_args, trust_remote_code=True)
     eval_acc={}
     eval_responses={}
     sampling_params = SamplingParams(n=1, temperature=args.temperature, top_p=0.95, max_tokens=args.max_tokens)
-    
+
     for dev_set in ["AMC23", "GSM8k", "MATH500", "OlympiadBench"]:
         processed_prompts, prompt2answer = get_prompts(dev_set, apply_chat_template)
         outputs = llm.generate(processed_prompts, sampling_params)
@@ -64,9 +64,9 @@ def main(args):
             is_correct=math_eval(response, answer)
             eval_results.append(is_correct)
             eval_response.append({"question": prompt, "response": response, "results": is_correct, "answer": answer})
-                
+
         acc=sum(1 for result in eval_results if result is True)/len(eval_results)
-        print(f"{dev_set} acc: {acc}")    
+        print(f"{dev_set} acc: {acc}")
 
 
 if __name__ == "__main__":
@@ -78,4 +78,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args)
-    

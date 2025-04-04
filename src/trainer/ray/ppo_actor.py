@@ -301,7 +301,7 @@ class ActorModelRayActor(BasePPORole):
         self.prompts_dataloader = strategy.setup_dataloader(
             self.prompts_dataset, args.rollout_batch_size // strategy.world_size, True, True
         )
-        
+
         self.eval_dataset = PromptDataset(
             eval_data, self.tokenizer, strategy, input_template=args.input_template, _eval=True
         )
@@ -312,7 +312,7 @@ class ActorModelRayActor(BasePPORole):
         # for prompts in self.eval_dataloader:
             # print("eval dataloader:", prompts)
             # break
-    
+
         if args.pretrain_data:
             pretrain_data = blending_datasets(
                 args.pretrain_data,

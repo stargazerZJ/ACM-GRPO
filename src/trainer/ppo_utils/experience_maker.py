@@ -230,13 +230,13 @@ class NaiveExperienceMaker(ABC):
             experience = experience.to_device("cuda")
             reward = reward.to(device="cuda")
             num_actions = experience.info["num_actions"]
-            
+
             if self.advantage_estimator == "grpo":
                 assert self.args.n_samples_per_prompt > 1, "grpo requires n_samples_per_prompt > 1"
                 reward = reward.reshape(-1, self.args.n_samples_per_prompt)
                 reward = (reward - reward.mean(1, keepdim=True)) / (reward.std(1, keepdim=True) + 1e-8)
                 reward = reward.reshape(-1)
-                
+
             reward = compute_reward(
                 reward,
                 self.kl_ctl.value,
@@ -718,7 +718,7 @@ class RemoteExperienceMaker(NaiveExperienceMaker):
         # Retrieve and combine results from all outputs
         all_outputs = sum(ray.get(all_output_refs), [])
 
-        
+
         samples_list = []
         for i in range(0, len(all_outputs), args.micro_rollout_batch_size):
             outputs = all_outputs[i : i + self.strategy.args.micro_rollout_batch_size]

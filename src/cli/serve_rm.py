@@ -39,7 +39,7 @@ def math_equal(gold, answer):
         return verify(gold, answer)
     except:
         return False
-    
+
 def strip_sequence(text, pad_token, eos_token):
     pad_token_escaped = re.escape(pad_token)
     eos_token_escaped = re.escape(eos_token)
@@ -51,7 +51,7 @@ def strip_sequence(text, pad_token, eos_token):
     text = re.sub(pattern, "", text)
     return text
 
-                
+
 class RewardModelProxy:
     def __init__(self, args):
         self.reward_model = get_llm_for_sequence_regression(
@@ -114,25 +114,25 @@ class RuleBasedRMProxy:
     def __init__(self, args):
         self.args = args
         self.prompt2answer = {}
-        
+
         dataset = load_from_disk(args.data_path)
         train_list = list(dataset["train"])
         validation_list = list(dataset["test"])
-        
+
         for line in train_list:
             self.prompt2answer[line['context'].strip()] = str(line['answer'])
         for line in validation_list:
             self.prompt2answer[line['context'].strip()] = str(line['answer'])
-        
+
         self.timeout_seconds=2
         self.tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_path)
-        
+
         self.chinese_pattern = re.compile(r'[\u4e00-\u9fff]')
         self.english_pattern = re.compile(r'[a-zA-Z]')
         self.boxed_pattern = re.compile(r"\\boxed\{((?:[^{}]|\\{|\\}|(?:\{(?:[^{}]|\\{|\\}|(?:\{(?:[^{}]|\\{|\\}|(?:\{[^{}]*\}))*\}))*\}))*\})")
         self.valid_char_pattern = re.compile(r'[a-zA-Z0-9\s\.,!?"\'\(\)\{\}\[\]_\-+=<>/@#$%^&*\\|:;~`\u2200-\u22FF]')
         self.repeat_pattern = re.compile(r'(.{5,}?)\1{4,}')
-    
+
     def get_score(self, query):
         try:
             with timeout(self.timeout_seconds):
@@ -146,31 +146,31 @@ class RuleBasedRMProxy:
                     prompt = query.split("<｜User｜>")[-1].split("<｜Assistant｜>")[0].strip()
                     prompt = prompt.replace("Please reason step by step, and put your final answer within \\boxed{}", "").strip()
                     response = query.split("<｜Assistant｜>")[-1].strip()
-                
+
                 score=None
                 ######################
                 # 根据prompt, response, prompt2answer等写reward function
-                # 思路: 
+                # 思路:
                 # 1.从模型生成的response中提取模型的最终答案(hint: 分析sft数据输出最终答案的格式，使用self.boxed_pattern提取答案)
                 # 2.用prompt2answer获取prompt对应的groundtruth
                 # 3.用math_equal函数评估response是否正确，并据此给出reward
                 ######################
                 return score
-                
+
         except TimeoutException:
             logger.warning("Processing timed out")
             return -1.0
         except Exception as e:
             logger.error(f"Error processing query: {str(e)}")
             return -1.0
-    
+
     def get_reward(self, queries):
         scores = []
         for query in queries:
             score = self.get_score(query)
             scores.append(score)
         return scores
-    
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=str, default="rule")
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_gen_len", type=int)
     parser.add_argument("--template_type", type=str, default="qwen", choices=["qwen", "deepseek"])
     # Reward Model
-    parser.add_argument("--data_path", type=str, default=None)    # for 
+    parser.add_argument("--data_path", type=str, default=None)    # for
     parser.add_argument("--reward_pretrain", type=str, default=None, help="HF model name or path")
     parser.add_argument("--normalize_reward", action="store_true", default=False, help="Enable Reward Normazation")
     parser.add_argument("--value_head_prefix", type=str, default="score")
@@ -202,7 +202,7 @@ if __name__ == "__main__":
         reward_model = RewardModelProxy(args)
     else:
         reward_model = RuleBasedRMProxy(args)
-    
+
     # test_case="<im_start>\nsystem\nnihao<|im_end|>\n<|im_start|>user\n1+1<|im_end|>\n<|im_start|>assistant\n1+1=\\boxed{2}<im_end>"
     # reward=reward_model.get_reward([test_case for _ in range(4)])
     # print(reward)

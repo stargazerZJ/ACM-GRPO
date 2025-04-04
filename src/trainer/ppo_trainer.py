@@ -198,7 +198,7 @@ x
         self.prompt2answer={}
         self.prompt2source={}
         data=[]
-        with open(self.args.test_path, 'r', encoding='utf-8') as f: 
+        with open(self.args.test_path, 'r', encoding='utf-8') as f:
             for line in jsonlines.Reader(f): data.append(line)
         self.sources=[]
         for line in data:
@@ -207,7 +207,7 @@ x
             self.sources.append(line['source'])
         self.sources=set(self.sources)
         print("prompt2answer_length:", len(self.prompt2answer))
-        
+
 
     def fit(
         self,
@@ -273,7 +273,7 @@ x
                         self.strategy.print(output)
                     self.replay_buffer.append(experience)
 
-                
+
                 train_samples=torch.cat(train_samples, dim=0)
                 train_samples_reward=torch.cat(train_samples_reward, dim=0)
                 train_samples_length=torch.cat(train_samples_length, dim=0)
@@ -287,7 +287,7 @@ x
                         prompt, response=self.split_qa(sample)
                         qa_pairs.append({"prompt": prompt, "response": response, "reward": train_samples_reward[idx].item(), "response_length": train_samples_length[idx].item()})
                     os.makedirs(os.path.dirname(os.path.join(self.args.samples_save_path, "train", f"step_{steps}.json")), exist_ok=True)
-                    with open(os.path.join(self.args.samples_save_path, "train", f"step_{steps}.json"), 'w', encoding='utf-8') as f: 
+                    with open(os.path.join(self.args.samples_save_path, "train", f"step_{steps}.json"), 'w', encoding='utf-8') as f:
                         json.dump(qa_pairs, f, indent=4)
 
 
@@ -586,8 +586,8 @@ x
         for source in acc:
             if cnt[source]==0: acc[source]=0
             else: acc[source]=acc[source]/cnt[source]
-        return acc, eval_output                
-    
+        return acc, eval_output
+
 
     def evaluate(self, eval_dataloader, steps):
         step_bar = tqdm(
@@ -607,29 +607,29 @@ x
         eval_samples=torch.cat(eval_samples, dim=0)
         eval_samples=self.strategy.all_gather(eval_samples)
         decoded_sequences=self.tokenizer.batch_decode(eval_samples.cpu(), skip_special_tokens=False)
-        
+
         avg_response_lengths=np.mean(response_lengths)
-        logs={"response_length": avg_response_lengths,}   
+        logs={"response_length": avg_response_lengths,}
         logs=self.strategy.all_reduce(logs)
-        
+
         if self.strategy.is_rank_0():
             # calc acc on rank_0
             print("num sequence:", len(decoded_sequences))
             acc, eval_output=self.calculate_acc(decoded_sequences)
             os.makedirs(os.path.dirname(os.path.join(self.args.samples_save_path, "test", f"step_{steps}.json")), exist_ok=True)
-            with open(os.path.join(self.args.samples_save_path, "test", f"step_{steps}.json"), 'w', encoding='utf-8') as f: 
+            with open(os.path.join(self.args.samples_save_path, "test", f"step_{steps}.json"), 'w', encoding='utf-8') as f:
                 json.dump(eval_output, f, indent=4)
             for source in acc: logs[f"acc_{source}"]=acc[source]
-        
+
             step_bar.set_postfix(logs)
-        
+
             if self._wandb is not None:
                 logs = {"eval/%s" % k: v for k, v in {**logs, "global_step": steps}.items()}
                 self._wandb.log(logs)
             elif self._tensorboard is not None:
                 for k, v in logs.items():
                     self._tensorboard.add_scalar(f"eval/{k}", v, steps)
-        
+
 
 
     def _save_checkpoint(self, args, tag, client_states):

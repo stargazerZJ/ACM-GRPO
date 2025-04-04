@@ -102,7 +102,7 @@ def list_equal(list1, list2):
         return False
     flag=1
     for t1, t2 in zip(list1, list2):
-        if not math_equal(t1,t2): 
+        if not math_equal(t1,t2):
             flag=0
             return False
     if flag==1: return True
@@ -161,7 +161,7 @@ def math_equal(
 
     if not prediction and prediction not in [0, False]:
         return False
-    
+
     # 2. symbolic equal
     reference = str(reference).strip()
     prediction = str(prediction).strip()
@@ -189,7 +189,7 @@ def math_equal(
         pred_str = pred_str.replace(s, "")
     if pred_str.lower() == ref_str.lower():
         return True
-    
+
 
     if (
         prediction.startswith("[")
@@ -199,7 +199,7 @@ def math_equal(
         prediction.startswith("(")
         and prediction.endswith(")")
         and not reference.startswith("[")
-    ):  
+    ):
         if list_equal(pred_str[1:-1], ref_str[1:-1]): return True
 
     ## [a, b] vs. [c, d], return a==c and b==d

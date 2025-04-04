@@ -2,7 +2,7 @@ import os
 import json
 import jsonlines
 import copy
-from tqdm import tqdm 
+from tqdm import tqdm
 import pandas as pd
 from multiprocessing import Pool
 from functools import partial
@@ -26,7 +26,7 @@ def exact_match_eval(pred, gt):
     for answer in copy.deepcopy(answer_list):
         normalized_answer_list.append(normalize_final_answer(answer))
     normalized_answer_list=process_answer_list(normalized_answer_list)
-    
+
     for answer in normalized_answer_list:
         if math_equal(gt, answer):
             return normalized_answer_list, True
@@ -53,7 +53,7 @@ def eval_in_parallel(input_data, output_file, num_processes=3, chunk_size=100):
     # Split the DataFrame into chunks
     chunk_size = min(chunk_size, len(data) // num_processes) # int(len(df) / num_processes) + 1
     chunks = [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
-    
+
     chunks_to_process = []
     for i, chunk in enumerate(chunks):
         chunks_to_process.append((i, chunk))
@@ -68,7 +68,7 @@ def eval_in_parallel(input_data, output_file, num_processes=3, chunk_size=100):
                                desc="Processing Chunks"):
                 i, result_chunk = result
                 res+=result_chunk
-    
+
     with open(output_file, 'w', encoding='utf-8') as f:
         for line in res:
             json.dump(line, f)
