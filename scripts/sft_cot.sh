@@ -49,7 +49,7 @@ src.cli.train_sft \
    --lr_scheduler cosine_with_min_lr \
    --gradient_checkpointing \
    --packing_samples \
-   --use_wandb $WANDB_KEY \
+   --use_wandb $WANDB_API_KEY \
    --wandb_project sjtu_cs2916_baseline \
    --wandb_group sft \
    --wandb_run_name $TRIAL_NAME
