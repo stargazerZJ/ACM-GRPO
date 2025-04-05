@@ -252,7 +252,7 @@ class ActorModelRayActor(BasePPORole):
             actor_optim,
             num_warmup_steps=num_warmup_steps,
             num_training_steps=max_steps,
-            scheduler_specific_kwargs={"min_lr": args.actor_learning_rate * 0.1},
+            scheduler_specific_kwargs={"min_lr": args.actor_learning_rate * 0.8},
         )
 
         if args.gradient_checkpointing:
