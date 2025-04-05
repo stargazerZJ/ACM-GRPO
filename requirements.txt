@@ -10,4 +10,5 @@ uvicorn
 fastapi
 math_verify
 wheel
+vllm
 # flash_attn  # You may need to run `pip install flash-attn --no-build-isolation`
